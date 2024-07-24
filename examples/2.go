@@ -1,3 +1,4 @@
+// Using mux, a custom multiplexer
 package main
 
 import (
@@ -18,11 +19,11 @@ func getHello(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	fmt.Printf("hello console")
-	http.HandleFunc("/", getRoot)
-	http.HandleFunc("/hello", getHello)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", getRoot)
+	mux.HandleFunc("/hello", getHello)
 
-	err := http.ListenAndServe(":3333", nil)
+	err := http.ListenAndServe(":3333", mux)
 	// port, http.Handler. if handler nil, uses default servier multiplexer
 
 	if errors.Is(err, http.ErrServerClosed) {
