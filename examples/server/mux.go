@@ -19,7 +19,8 @@ func getHello(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	mux := http.NewServeMux()
+	mux := http.NewServeMux() // mux = HTTP request multiplexer
+	// why? customize how server runs, run mutilple servers in same program
 	mux.HandleFunc("/", getRoot)
 	mux.HandleFunc("/hello", getHello)
 

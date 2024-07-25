@@ -19,12 +19,11 @@ func getHello(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	fmt.Printf("hello console")
 	http.HandleFunc("/", getRoot)
 	http.HandleFunc("/hello", getHello)
 
 	err := http.ListenAndServe(":3333", nil)
-	// port, http.Handler. if handler nil, uses default servier multiplexer
+	// port, http.Handler. if handler nil, uses default server multiplexer
 
 	if errors.Is(err, http.ErrServerClosed) {
 		fmt.Printf("server closed\n")
