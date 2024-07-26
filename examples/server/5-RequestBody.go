@@ -4,6 +4,9 @@
 // curl -X POST -F 'myName=Sammy' 'http://localhost:3333/hello'
 // For a form with no data to get an error message: 
 // curl -v -X POST 'http://localhost:3333/hello'
+
+// -F send form data
+// -v verbose
 package main
 
 import (
