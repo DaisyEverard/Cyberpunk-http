@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
+	"strconv"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // CHARACTER STORES
@@ -65,27 +63,6 @@ func (m *MockCharacterStore) UpdateOne(ctx context.Context, filter interface{}, 
 }
 
 var store CharacterStore
-
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
-
-	uri := os.Getenv("MONGODB_URI")
-	if uri == "" {
-		log.Fatal("Set your 'MONGODB_URI' environment variable. See: www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
-	}
-
-	var client *mongo.Client
-	var err error
-	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	collection := client.Database("cyberpunk-red").Collection("characters")
-	store = &MongoCharacterStore{collection}
-}
 
 func main() {
 	defer func() {
@@ -146,16 +123,18 @@ func updateHPHandler(w http.ResponseWriter, r *http.Request, store CharacterStor
 		return
 	}
 
-	id, ok := updateData["id"].(string)
-	if !ok || id == "" {
+	id, ok := updateData["id"].(float64)
+	if !ok {
 		http.Error(w, "id field is required", http.StatusBadRequest)
 		return
 	}
 
+	idStr := strconv.FormatFloat(id, 'f', 0, 64)
+
 	update := bson.D{{"$set", updateData}}
-	_, err := store.UpdateOne(context.TODO(), bson.D{{"id", id}}, update)
+	_, err := store.UpdateOne(context.TODO(), bson.D{{"id", idStr}}, update)
 	if err == mongo.ErrNoDocuments {
-		http.Error(w, fmt.Sprintf("No document found with the id %s", id), http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("No document found with the id %s", idStr), http.StatusNotFound)
 		return
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -163,5 +142,5 @@ func updateHPHandler(w http.ResponseWriter, r *http.Request, store CharacterStor
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "HP of character %s updated successfully", id)
+	fmt.Fprintf(w, "HP of character %s updated successfully", idStr)
 }

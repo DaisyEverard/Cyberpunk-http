@@ -6,22 +6,27 @@ import (
 	"net/http/httptest"
 	"testing"
 	"go.mongodb.org/mongo-driver/bson"
+	"bytes"
+	"strings"
 )
 
-var mockStore = &MockCharacterStore{
-	Data: map[string]bson.M{
-		"123": {"name": "Johnny Silverhand", "hp": 100},
-	},
+func getMockStore() *MockCharacterStore {
+	return &MockCharacterStore{
+		Data: map[string]bson.M{
+			"123": {"name": "Johnny Silverhand", "HP": 100},
+		},
+	}
 }
 
 func TestHPHandler(t *testing.T) {
 	t.Run("GET request - successful", func(t *testing.T) {
+		mockStore := getMockStore()
 		req := httptest.NewRequest(http.MethodGet, "/HP?id=123", nil)
 		rec := httptest.NewRecorder()
 		HPHandler := makeHPHandler(mockStore)
 		HPHandler(rec, req)
 
-		res := w.Result()
+		res := rec.Result()
 		defer res.Body.Close()
 
 		data, err := ioutil.ReadAll(res.Body)
@@ -29,24 +34,64 @@ func TestHPHandler(t *testing.T) {
 			t.Fatalf("expected no error but got %v", err)
 		}
 
-		expected := `{"name":"Johnny Silverhand","hp":100}`
-		if string(data) != expected {
-			t.Errorf("expected %s but got %s", expected, string(data))
+		jsonString := string(data)
+
+		expectedPairs := []string{"\"name\":\"Johnny Silverhand\"", "\"HP\":100"}
+		for _, pair := range expectedPairs {
+			if !(strings.Contains(jsonString, pair)) {
+				t.Errorf("didn't contain expected string '%s' in result %s",pair, string(data))
+			}
 		}
 	})
 
-	t.Run("GET request - name not found", func(t *testing.T) {
+	t.Run("GET request - id not found", func(t *testing.T) {
+		mockStore := getMockStore()
+		req := httptest.NewRequest(http.MethodGet, "/HP", nil)
+		rec := httptest.NewRecorder()
+		HPHandler := makeHPHandler(mockStore)
+		HPHandler(rec, req)
+
+		res := rec.Result()
+
+		if res.StatusCode != http.StatusBadRequest {
+			t.Errorf("Expected StatusBadRequest error but got %v", res.StatusCode)
+		}
 	})
 
 	t.Run("POST request - successful", func(t *testing.T) {
+		mockStore := getMockStore()
+		jsonBody := []byte(`{"id":123,"HP":5}`)
+		bodyReader := bytes.NewReader(jsonBody)
+		req := httptest.NewRequest(http.MethodPost, "/HP?id=123", bodyReader)
+
+		rec := httptest.NewRecorder()
+		HPHandler := makeHPHandler(mockStore)
+		HPHandler(rec, req)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		_, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			t.Fatalf("expected no error but got %v", err)
+		}
+		res.Body.Close()
+
+		var expectedHP float64
+		expectedHP = 5
+		actualHP := mockStore.Data["123"]["HP"]
+
+		if actualHP != expectedHP {
+			t.Errorf("expected %f but got %f.", expectedHP, actualHP)
+		}
 	})
 
 	t.Run("POST request - invalid JSON", func(t *testing.T) {
 	})
 
-	t.Run("POST request - name field missing", func(t *testing.T) {
+	t.Run("POST request - id field missing", func(t *testing.T) {
 	})
 
-	t.Run("POST request - name not found", func(t *testing.T) {
+	t.Run("POST request - id not found", func(t *testing.T) {
 	})
 }
