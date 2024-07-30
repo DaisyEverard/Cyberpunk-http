@@ -14,8 +14,57 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var client *mongo.Client
-var collection *mongo.Collection
+// CHARACTER STORES
+type CharacterStore interface {
+	FindOne(ctx context.Context, filter interface{}) (bson.M, error)
+	UpdateOne(ctx context.Context, filter interface{}, update interface{}) (*mongo.UpdateResult, error)
+}
+
+type MongoCharacterStore struct {
+	collection *mongo.Collection
+}
+
+func (m *MongoCharacterStore) FindOne(ctx context.Context, filter interface{}) (bson.M, error) {
+	var result bson.M
+	err := m.collection.FindOne(ctx, filter).Decode(&result)
+	return result, err
+}
+
+func (m *MongoCharacterStore) UpdateOne(ctx context.Context, filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
+	return m.collection.UpdateOne(ctx, filter, update)
+}
+
+type MockCharacterStore struct {
+	Data map[string]bson.M
+}
+
+func (m *MockCharacterStore) FindOne(ctx context.Context, filter interface{}) (bson.M, error) {
+	filterMap := filter.(bson.D)
+	id := filterMap[0].Value.(string)
+	result, ok := m.Data[id]
+	if !ok {
+		return nil, mongo.ErrNoDocuments
+	}
+	return result, nil
+}
+
+func (m *MockCharacterStore) UpdateOne(ctx context.Context, filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
+	filterMap := filter.(bson.D)
+	id := filterMap[0].Value.(string)
+	if data, exists := m.Data[id]; exists {
+		updateMap := update.(bson.D)
+		for _, field := range updateMap {
+			for k, v := range field.Value.(bson.M) {
+				data[k] = v
+			}
+		}
+		m.Data[id] = data
+		return &mongo.UpdateResult{MatchedCount: 1, ModifiedCount: 1}, nil
+	}
+	return nil, mongo.ErrNoDocuments
+}
+
+var store CharacterStore
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -27,23 +76,27 @@ func init() {
 		log.Fatal("Set your 'MONGODB_URI' environment variable. See: www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
 
+	var client *mongo.Client
 	var err error
 	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	collection = client.Database("cyberpunk-red").Collection("characters")
+	collection := client.Database("cyberpunk-red").Collection("characters")
+	store = &MongoCharacterStore{collection}
 }
 
 func main() {
 	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
-			log.Fatal(err)
+		if mongoClient, ok := store.(*MongoCharacterStore); ok {
+			if err := mongoClient.collection.Database().Client().Disconnect(context.TODO()); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}()
 
-	http.HandleFunc("/HP", HPHandler)
+	http.HandleFunc("/HP", makeHPHandler(store))
 
 	fmt.Println("Server is listening on port 8080...")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -51,30 +104,29 @@ func main() {
 	}
 }
 
-// get
-func HPHandler(w http.ResponseWriter, r *http.Request) {
-
-	switch r.Method {
-	case http.MethodGet:
-		getHPHandler(w,r)
-	case http.MethodPost:
-		updateHPHandler(w,r)
-	default: 
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+func makeHPHandler(store CharacterStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getHPHandler(w, r, store)
+		case http.MethodPost:
+			updateHPHandler(w, r, store)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
 	}
 }
 
-func getHPHandler(w http.ResponseWriter, r *http.Request) {
-	name := r.URL.Query().Get("name")
-	if name == "" {
-		http.Error(w, "Name parameter is required", http.StatusBadRequest)
+func getHPHandler(w http.ResponseWriter, r *http.Request, store CharacterStore) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "id parameter is required", http.StatusBadRequest)
 		return
 	}
 
-	var result bson.M
-	err := collection.FindOne(context.TODO(), bson.D{{"name", name}}).Decode(&result)
+	result, err := store.FindOne(context.TODO(), bson.D{{"id", id}})
 	if err == mongo.ErrNoDocuments {
-		http.Error(w, fmt.Sprintf("No document found with the name %s", name), http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("No document found with the id %s", id), http.StatusNotFound)
 		return
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -87,26 +139,29 @@ func getHPHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func updateHPHandler(w http.ResponseWriter, r *http.Request) {
+func updateHPHandler(w http.ResponseWriter, r *http.Request, store CharacterStore) {
 	var updateData bson.M
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
 		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
 		return
 	}
 
-	name, ok := updateData["name"].(string)
-	if !ok || name == "" {
-		http.Error(w, "Name field is required", http.StatusBadRequest)
+	id, ok := updateData["id"].(string)
+	if !ok || id == "" {
+		http.Error(w, "id field is required", http.StatusBadRequest)
 		return
 	}
 
 	update := bson.D{{"$set", updateData}}
-	_, err := collection.UpdateOne(context.TODO(), bson.D{{"name", name}}, update)
-	if err != nil {
+	_, err := store.UpdateOne(context.TODO(), bson.D{{"id", id}}, update)
+	if err == mongo.ErrNoDocuments {
+		http.Error(w, fmt.Sprintf("No document found with the id %s", id), http.StatusNotFound)
+		return
+	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "HP of character %s updated successfully", name)
+	fmt.Fprintf(w, "HP of character %s updated successfully", id)
 }
