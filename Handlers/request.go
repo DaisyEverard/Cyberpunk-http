@@ -7,9 +7,11 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-
+	"os"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // CHARACTER STORES
@@ -62,16 +64,26 @@ func (m *MockCharacterStore) UpdateOne(ctx context.Context, filter interface{}, 
 	return nil, mongo.ErrNoDocuments
 }
 
-var store CharacterStore
 
 func main() {
-	defer func() {
-		if mongoClient, ok := store.(*MongoCharacterStore); ok {
-			if err := mongoClient.collection.Database().Client().Disconnect(context.TODO()); err != nil {
-				log.Fatal(err)
-			}
-		}
-	}()
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	MONGODB_URI := os.Getenv("MONGODB_URI")
+	fmt.Println("mogodb_url: " + MONGODB_URI)
+
+	mongoClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(MONGODB_URI))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	collection := mongoClient.Database("cyberpunk-red").Collection("characters")
+	var store CharacterStore
+	store = &MongoCharacterStore{collection}
+
+	defer mongoClient.Disconnect(context.TODO());
 
 	http.HandleFunc("/HP", makeHPHandler(store))
 
