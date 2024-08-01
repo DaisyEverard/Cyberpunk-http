@@ -12,8 +12,9 @@ import (
 
 func getMockStore() *MockCharacterStore {
 	return &MockCharacterStore{
-		Data: map[string]bson.M{
-			"123": {"name": "Johnny Silverhand", "HP": 100},
+		Data: []bson.M{
+			{"_id": 123,"name": "Johnny Silverhand", "HP": 100,},
+			{"_id": 13,"name": "Name", "HP": 20,},
 		},
 	}
 }
@@ -60,7 +61,7 @@ func TestHPHandler(t *testing.T) {
 
 	t.Run("POST request - successful", func(t *testing.T) {
 		mockStore := getMockStore()
-		jsonBody := []byte(`{"id":123,"HP":5}`)
+		jsonBody := []byte(`{"HP":5}`)
 		bodyReader := bytes.NewReader(jsonBody)
 		req := httptest.NewRequest(http.MethodPost, "/HP?id=123", bodyReader)
 
@@ -77,12 +78,11 @@ func TestHPHandler(t *testing.T) {
 		}
 		res.Body.Close()
 
-		var expectedHP float64
-		expectedHP = 5
-		actualHP := mockStore.Data["123"]["HP"]
+		expectedHP := 5
+		actualHP := mockStore.Data[0]["HP"].(int)
 
 		if actualHP != expectedHP {
-			t.Errorf("expected %f but got %f.", expectedHP, actualHP)
+			t.Errorf("expected %v but got %v.", expectedHP, actualHP)
 		}
 	})
 

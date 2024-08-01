@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"errors"
 )
 
 // CHARACTER STORES
@@ -35,33 +36,90 @@ func (m *MongoCharacterStore) UpdateOne(ctx context.Context, filter interface{},
 }
 
 type MockCharacterStore struct {
-	Data map[string]bson.M
+	Data []bson.M
 }
 
 func (m *MockCharacterStore) FindOne(ctx context.Context, filter interface{}) (bson.M, error) {
-	filterMap := filter.(bson.D)
-	id := filterMap[0].Value.(string)
-	result, ok := m.Data[id]
+	filterMap, ok := filter.(bson.D)
 	if !ok {
-		return nil, mongo.ErrNoDocuments
+		return nil, errors.New("invalid filter type, expected bson.D")
 	}
-	return result, nil
-}
 
-func (m *MockCharacterStore) UpdateOne(ctx context.Context, filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
-	filterMap := filter.(bson.D)
-	id := filterMap[0].Value.(string)
-	if data, exists := m.Data[id]; exists {
-		updateMap := update.(bson.D)
-		for _, field := range updateMap {
-			for k, v := range field.Value.(bson.M) {
-				data[k] = v
+	for _, doc := range m.Data {
+		matches := true
+		for _, filterElem := range filterMap {
+			intFilterValue, _ := strconv.Atoi(filterElem.Value.(string))
+			if doc[filterElem.Key] != intFilterValue {
+				matches = false
+				break
 			}
 		}
-		m.Data[id] = data
-		return &mongo.UpdateResult{MatchedCount: 1, ModifiedCount: 1}, nil
+
+		if matches {
+			return doc, nil
+		}
+}
+
+return nil, mongo.ErrNoDocuments
+}
+
+func (m *MockCharacterStore) UpdateOne(ctx context.Context, filter, update interface{}) (*mongo.UpdateResult, error) {
+	filterMap, ok := filter.(bson.D)
+	if !ok {
+		return nil, errors.New("invalid filter type, expected bson.D")
 	}
-	return nil, mongo.ErrNoDocuments
+
+	fmt.Printf("update: %v", update)
+	updateMap, ok := update.(bson.D)
+	if !ok {
+		return nil, errors.New("invalid update type, expected bson.D")
+	}
+
+	var matchedCount, modifiedCount int64
+
+	for i, doc := range m.Data {
+		matches := true
+		for _, filterElem := range filterMap {
+			if doc[filterElem.Key] != filterElem.Value {
+				matches = false
+				break
+			}
+		}
+
+		if matches {
+			matchedCount++
+			updatedDoc := doc
+
+			for _, updateElem := range updateMap {
+				if updateElem.Key == "$set" {
+					updates, ok := updateElem.Value.(bson.M)
+					if !ok {
+						return nil, errors.New("invalid update format for $set")
+					}
+
+					for k, v := range updates {
+						updatedDoc[k] = v
+					}
+
+					m.Data[i] = updatedDoc
+					modifiedCount++
+				} else {
+					return nil, errors.New("unsupported update operator")
+				}
+			}
+
+			break
+		}
+	}
+
+	if matchedCount == 0 {
+		return nil, mongo.ErrNoDocuments
+	}
+
+	return &mongo.UpdateResult{
+		MatchedCount:  matchedCount,
+		ModifiedCount: modifiedCount,
+	}, nil
 }
 
 
@@ -72,8 +130,8 @@ func main() {
 	}
 
 	MONGODB_URI := os.Getenv("MONGODB_URI")
-	fmt.Println("mogodb_url: " + MONGODB_URI)
 
+	// This is the bit it's failing on 
 	mongoClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(MONGODB_URI))
 	if err != nil {
 		log.Fatal(err)
@@ -113,7 +171,8 @@ func getHPHandler(w http.ResponseWriter, r *http.Request, store CharacterStore) 
 		return
 	}
 
-	result, err := store.FindOne(context.TODO(), bson.D{{"id", id}})
+	result, err := store.FindOne(context.TODO(), bson.D{{"_id", id}})
+
 	if err == mongo.ErrNoDocuments {
 		http.Error(w, fmt.Sprintf("No document found with the id %s", id), http.StatusNotFound)
 		return
