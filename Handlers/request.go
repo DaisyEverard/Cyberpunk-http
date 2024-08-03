@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"errors"
 )
 
@@ -171,7 +172,17 @@ func getHPHandler(w http.ResponseWriter, r *http.Request, store CharacterStore) 
 		return
 	}
 
-	result, err := store.FindOne(context.TODO(), bson.D{{"_id", id}})
+	// result, err := store.FindOne(context.TODO(), bson.D{{"role", "Medtech"}}) // this worked
+	// role is a string field
+	// _id is of type ObjectID, user_id is an int32.
+	// you need to convert to the right type to feed to the filter
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Invalid id format", http.StatusBadRequest)
+		return
+	}
+	result, err := store.FindOne(context.TODO(), bson.D{{"_id", objID}}) 
 
 	if err == mongo.ErrNoDocuments {
 		http.Error(w, fmt.Sprintf("No document found with the id %s", id), http.StatusNotFound)
