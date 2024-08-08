@@ -142,7 +142,7 @@ func main() {
 
 	defer mongoClient.Disconnect(context.TODO());
 
-	http.HandleFunc("/HP", makeHPHandler(store))
+	http.HandleFunc("/HP", makeDocumentHandler(store))
 
 	fmt.Println("Server is listening on port 8080...")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -150,11 +150,11 @@ func main() {
 	}
 }
 
-func makeHPHandler(store CharacterStore) http.HandlerFunc {
+func makeDocumentHandler(store CharacterStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			getHPHandler(w, r, store)
+			getDocumentHandler(w, r, store)
 		case http.MethodPost:
 			updateHPHandler(w, r, store)
 		default:

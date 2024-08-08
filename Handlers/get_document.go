@@ -1,14 +1,33 @@
 package main
 
 import (
+	"net/http"
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+func getDocumentHandler(w http.ResponseWriter, r *http.Request, store CharacterStore) {
+	name := r.URL.Query().Get("name")
+	id := r.URL.Query().Get("id")
+	if (name == "" && id == "")  {
+		http.Error(w, "name or id parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	// logic for only one query field at a time
+	// implement multiple query fields at a time 
+	if id != "" {
+		result, err := getDocumentByID(w,store, id)
+		sendDocument(w, result, err, "id")
+	} else if name != "" {
+		result, err := getDocumentByName(w,store, name)
+		sendDocument(w, result, err, "name")
+	}
+}
 
 func getDocumentByID(w http.ResponseWriter, store CharacterStore, id string) (bson.M, error) {
 	objID, err := primitive.ObjectIDFromHex(id)

@@ -24,7 +24,7 @@ func TestHPHandler(t *testing.T) {
 		mockStore := getMockStore()
 		req := httptest.NewRequest(http.MethodGet, "/HP?id=123", nil)
 		rec := httptest.NewRecorder()
-		HPHandler := makeHPHandler(mockStore)
+		HPHandler := makeDocumentHandler(mockStore)
 		HPHandler(rec, req)
 
 		res := rec.Result()
@@ -49,7 +49,7 @@ func TestHPHandler(t *testing.T) {
 		mockStore := getMockStore()
 		req := httptest.NewRequest(http.MethodGet, "/HP", nil)
 		rec := httptest.NewRecorder()
-		HPHandler := makeHPHandler(mockStore)
+		HPHandler := makeDocumentHandler(mockStore)
 		HPHandler(rec, req)
 
 		res := rec.Result()
@@ -66,7 +66,7 @@ func TestHPHandler(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/HP?id=123", bodyReader)
 
 		rec := httptest.NewRecorder()
-		HPHandler := makeHPHandler(mockStore)
+		HPHandler := makeDocumentHandler(mockStore)
 		HPHandler(rec, req)
 
 		res := rec.Result()
