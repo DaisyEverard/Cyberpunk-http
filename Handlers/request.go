@@ -11,10 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"errors"
-)
+	"go.mongodb.org/mongo-driver/mongo/options")
 
 // CHARACTER STORES
 type CharacterStore interface {
@@ -162,39 +160,6 @@ func makeHPHandler(store CharacterStore) http.HandlerFunc {
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	}
-}
-
-func getHPHandler(w http.ResponseWriter, r *http.Request, store CharacterStore) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		http.Error(w, "id parameter is required", http.StatusBadRequest)
-		return
-	}
-
-	// result, err := store.FindOne(context.TODO(), bson.D{{"role", "Medtech"}}) // this worked
-	// role is a string field
-	// _id is of type ObjectID, user_id is an int32.
-	// you need to convert to the right type to feed to the filter
-
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		http.Error(w, "Invalid id format", http.StatusBadRequest)
-		return
-	}
-	result, err := store.FindOne(context.TODO(), bson.D{{"_id", objID}}) 
-
-	if err == mongo.ErrNoDocuments {
-		http.Error(w, fmt.Sprintf("No document found with the id %s", id), http.StatusNotFound)
-		return
-	} else if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(result); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
