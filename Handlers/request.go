@@ -12,7 +12,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/joho/godotenv"
 	"errors"
-	"go.mongodb.org/mongo-driver/mongo/options")
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 // CHARACTER STORES
 type CharacterStore interface {
@@ -156,38 +158,90 @@ func makeDocumentHandler(store CharacterStore) http.HandlerFunc {
 		case http.MethodGet:
 			getDocumentHandler(w, r, store)
 		case http.MethodPost:
-			updateHPHandler(w, r, store)
+			updateHP(w, r, store)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	}
 }
 
-func updateHPHandler(w http.ResponseWriter, r *http.Request, store CharacterStore) {
+func updateHP(w http.ResponseWriter, r *http.Request, store CharacterStore) {
 	var updateData bson.M
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
 		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
 		return
 	}
+	fmt.Printf("Received updateData: %+v\n", updateData)
 
-	id, ok := updateData["id"].(float64)
-	if !ok {
-		http.Error(w, "id field is required", http.StatusBadRequest)
+	id, _ := updateData["id"].(string)
+	name, _ := updateData["name"].(string)
+	print("name: %v", name)
+	print("id: %v", id)
+
+	if (id == "" && name == "") {
+		http.Error(w, "name or id parameter is required", http.StatusBadRequest)
 		return
 	}
 
-	idStr := strconv.FormatFloat(id, 'f', 0, 64)
+	newHP, ok := updateData["hp"] // int32 in Mongo
+    if !ok {
+        http.Error(w, "hp field is required and must be a number", http.StatusBadRequest)
+        return
+    }
+	update := bson.D{{"$set", bson.M{"hp": newHP}}}
 
-	update := bson.D{{"$set", updateData}}
-	_, err := store.UpdateOne(context.TODO(), bson.D{{"id", idStr}}, update)
-	if err == mongo.ErrNoDocuments {
-		http.Error(w, fmt.Sprintf("No document found with the id %s", idStr), http.StatusNotFound)
-		return
-	} else if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	var result *mongo.UpdateResult
+	// Check if HP in document is already the same as the new one? 
+	// result = {MatchedCount, ModifiedCount, UpsertedCount, UpsertedID}
+	// MatchedCount is 0: No documents matched the filter.
+	// ModifiedCount is 0: No documents were modified.
+	// UpsertedCount is 0: No documents were upserted. (if no id exists, a new one is made with the value. Off by default)
+	// UpsertedID is nil: No ID was generated because no upsert occurred.
+
+	if id != "" {
+		result = updateHPByID(w, r, store, update, id)
+	} else if name != "" {
+		result = updateHPByName(w,r, store,update, name)
 	}
+
+	if result.ModifiedCount == 0 {
+        http.Error(w, "No document was updated. It may already have the desired value.", http.StatusNotModified)
+        return
+    }
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "HP of character %s updated successfully", idStr)
+	fmt.Fprintf(w, "HP of character with id %s updated successfully", id)
+}
+ 
+func updateHPByID(w http.ResponseWriter, r *http.Request, store CharacterStore, update bson.D, id string) *mongo.UpdateResult {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		http.Error(w, "Invalid id format", http.StatusBadRequest)
+		return nil
+	}
+
+	result, err := store.UpdateOne(context.TODO(), bson.D{{"_id", objID}}, update)
+	if (err == mongo.ErrNoDocuments || result.MatchedCount == 0) {
+		http.Error(w, fmt.Sprintf("No document found with the id %s", objID), http.StatusNotFound)
+		return nil
+	} else if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+	return result
+}
+
+func updateHPByName(w http.ResponseWriter, r *http.Request, store CharacterStore,update bson.D, name string) *mongo.UpdateResult {
+	fmt.Printf("\nname: %v\n", name)
+
+	result, err := store.UpdateOne(context.TODO(), bson.D{{"name", name}}, update)
+	if (err == mongo.ErrNoDocuments || result.MatchedCount == 0) {
+		http.Error(w, fmt.Sprintf("No document found with the name %s", name), http.StatusNotFound)
+		return nil
+	} else if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+
+	return result
 }
