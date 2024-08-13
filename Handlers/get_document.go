@@ -1,16 +1,17 @@
 package main
 
 import (
-	"net/http"
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func getDocumentHandler(w http.ResponseWriter, r *http.Request, store CharacterStore) {
+func getDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	id := r.URL.Query().Get("id")
 	if (name == "" && id == "")  {
@@ -21,15 +22,15 @@ func getDocumentHandler(w http.ResponseWriter, r *http.Request, store CharacterS
 	// logic for only one query field at a time
 	// implement multiple query fields at a time 
 	if id != "" {
-		result, err := getDocumentByID(w,store, id)
+		result, err := getDocumentByID(w, id)
 		sendDocument(w, result, err, "id")
 	} else if name != "" {
-		result, err := getDocumentByName(w,store, name)
+		result, err := getDocumentByName(w, name)
 		sendDocument(w, result, err, "name")
 	}
 }
 
-func getDocumentByID(w http.ResponseWriter, store CharacterStore, id string) (bson.M, error) {
+func getDocumentByID(w http.ResponseWriter, id string) (bson.M, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		// This sends an HTTP response with the error message, no return value
@@ -37,11 +38,11 @@ func getDocumentByID(w http.ResponseWriter, store CharacterStore, id string) (bs
 		return nil, err
 		// is further error handling necessary here, context to close?
 	}
-	return store.FindOne(context.TODO(), bson.D{{"_id", objID}}) 
+	return getOneFromCollection(context.TODO(), bson.D{{"_id", objID}})
 }
 
-func getDocumentByName(w http.ResponseWriter, store CharacterStore, name string) (bson.M, error) {
-	return store.FindOne(context.TODO(), bson.D{{"name", name}}) 
+func getDocumentByName(w http.ResponseWriter, name string) (bson.M, error) {
+	return getOneFromCollection(context.TODO(), bson.D{{"name", name}})
 }
 
 func sendDocument(w http.ResponseWriter, result bson.M, err error, queryType string) {

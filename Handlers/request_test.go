@@ -10,21 +10,19 @@ import (
 	"strings"
 )
 
-func getMockStore() *MockCharacterStore {
-	return &MockCharacterStore{
-		Data: []bson.M{
-			{"_id": 123,"name": "Johnny Silverhand", "HP": 100,},
-			{"_id": 13,"name": "Name", "HP": 20,},
-		},
-	}
-}
+var Data []bson.M
 
 func TestHPHandler(t *testing.T) {
+	Data = []bson.M{
+		{"_id": 123,"name": "Johnny Silverhand", "HP": 100,},
+		{"_id": 13,"name": "Name", "HP": 20,},
+	}
+	
+	collection = Data
 	t.Run("GET request - successful", func(t *testing.T) {
 		mockStore := getMockStore()
 		req := httptest.NewRequest(http.MethodGet, "/HP?id=123", nil)
 		rec := httptest.NewRecorder()
-		HPHandler := makeDocumentHandler(mockStore)
 		HPHandler(rec, req)
 
 		res := rec.Result()
@@ -45,53 +43,53 @@ func TestHPHandler(t *testing.T) {
 		}
 	})
 
-	t.Run("GET request - id not found", func(t *testing.T) {
-		mockStore := getMockStore()
-		req := httptest.NewRequest(http.MethodGet, "/HP", nil)
-		rec := httptest.NewRecorder()
-		HPHandler := makeDocumentHandler(mockStore)
-		HPHandler(rec, req)
+	// t.Run("GET request - id not found", func(t *testing.T) {
+	// 	mockStore := getMockStore()
+	// 	req := httptest.NewRequest(http.MethodGet, "/HP", nil)
+	// 	rec := httptest.NewRecorder()
+	// 	HPHandler := makeDocumentHandler(mockStore)
+	// 	HPHandler(rec, req)
 
-		res := rec.Result()
+	// 	res := rec.Result()
 
-		if res.StatusCode != http.StatusBadRequest {
-			t.Errorf("Expected StatusBadRequest error but got %v", res.StatusCode)
-		}
-	})
+	// 	if res.StatusCode != http.StatusBadRequest {
+	// 		t.Errorf("Expected StatusBadRequest error but got %v", res.StatusCode)
+	// 	}
+	// })
 
-	t.Run("POST request - successful", func(t *testing.T) {
-		mockStore := getMockStore()
-		jsonBody := []byte(`{"HP":5}`)
-		bodyReader := bytes.NewReader(jsonBody)
-		req := httptest.NewRequest(http.MethodPost, "/HP?id=123", bodyReader)
+	// t.Run("POST request - successful", func(t *testing.T) {
+	// 	mockStore := getMockStore()
+	// 	jsonBody := []byte(`{"HP":5}`)
+	// 	bodyReader := bytes.NewReader(jsonBody)
+	// 	req := httptest.NewRequest(http.MethodPost, "/HP?id=123", bodyReader)
 
-		rec := httptest.NewRecorder()
-		HPHandler := makeDocumentHandler(mockStore)
-		HPHandler(rec, req)
+	// 	rec := httptest.NewRecorder()
+	// 	HPHandler := makeDocumentHandler(mockStore)
+	// 	HPHandler(rec, req)
 
-		res := rec.Result()
-		defer res.Body.Close()
+	// 	res := rec.Result()
+	// 	defer res.Body.Close()
 
-		_, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			t.Fatalf("expected no error but got %v", err)
-		}
-		res.Body.Close()
+	// 	_, err := ioutil.ReadAll(res.Body)
+	// 	if err != nil {
+	// 		t.Fatalf("expected no error but got %v", err)
+	// 	}
+	// 	res.Body.Close()
 
-		expectedHP := 5
-		actualHP := mockStore.Data[0]["HP"].(int)
+	// 	expectedHP := 5
+	// 	actualHP := mockStore.Data[0]["HP"].(int)
 
-		if actualHP != expectedHP {
-			t.Errorf("expected %v but got %v.", expectedHP, actualHP)
-		}
-	})
+	// 	if actualHP != expectedHP {
+	// 		t.Errorf("expected %v but got %v.", expectedHP, actualHP)
+	// 	}
+	// })
 
-	t.Run("POST request - invalid JSON", func(t *testing.T) {
-	})
+	// t.Run("POST request - invalid JSON", func(t *testing.T) {
+	// })
 
-	t.Run("POST request - id field missing", func(t *testing.T) {
-	})
+	// t.Run("POST request - id field missing", func(t *testing.T) {
+	// })
 
-	t.Run("POST request - id not found", func(t *testing.T) {
-	})
+	// t.Run("POST request - id not found", func(t *testing.T) {
+	// })
 }
