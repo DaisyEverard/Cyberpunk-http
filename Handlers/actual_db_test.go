@@ -47,6 +47,7 @@ func connectToMongo() {
 
 // test is timing out before it can run
 // if doing docker image, how to assert initial state?
+// also, how docker? what image? what?
 func TestAll(t *testing.T) {
 	connectToMongo()
 	t.Run("getHPbyName", func(t *testing.T) {
