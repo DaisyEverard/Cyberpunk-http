@@ -22,7 +22,6 @@ func main() {
 
 	MONGODB_URI := os.Getenv("MONGODB_URI")
 
-	// This is the bit it's failing on
 	mongoClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(MONGODB_URI))
 	if err != nil {
 		log.Fatal(err)
@@ -32,7 +31,6 @@ func main() {
 
 	defer mongoClient.Disconnect(context.TODO())
 
-	// http.HandleFunc("/hp", HPHandler)
 	http.HandleFunc("/document", wholeDocumentHandler)
 	http.HandleFunc("/hp", HPHandler)
 
