@@ -10,3 +10,13 @@ GO backend for Cyberpunk-red
 ## How to run
 
 go run .
+
+## Structure
+
+## Issues
+
+- 403 not returned from server if update fails due to new value being same as old
+
+## Testing
+
+How??

@@ -1,9 +1,10 @@
-package main
+package services
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"main/config"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,7 +15,7 @@ import (
 // HP
 // HP
 // HP
-func updateHP(w http.ResponseWriter, r *http.Request) {
+func UpdateHP(w http.ResponseWriter, r *http.Request) {
 	var updateData bson.M
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
 		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
@@ -67,7 +68,7 @@ func updateHPByID(w http.ResponseWriter, r *http.Request, update bson.D, id stri
 		return nil
 	}
 
-	result, err := collection.UpdateOne(context.TODO(), bson.D{{"_id", objID}}, update)
+	result, err := config.Collection.UpdateOne(context.TODO(), bson.D{{"_id", objID}}, update)
 
 	if err == mongo.ErrNoDocuments || result.MatchedCount == 0 {
 		http.Error(w, fmt.Sprintf("No document found with the id %s", objID), http.StatusNotFound)
@@ -80,7 +81,7 @@ func updateHPByID(w http.ResponseWriter, r *http.Request, update bson.D, id stri
 }
 
 func updateHPByName(w http.ResponseWriter, r *http.Request, update bson.D, name string) *mongo.UpdateResult {
-	result, err := collection.UpdateOne(context.TODO(), bson.D{{"name", name}}, update)
+	result, err := config.Collection.UpdateOne(context.TODO(), bson.D{{"name", name}}, update)
 	if err == mongo.ErrNoDocuments || result.MatchedCount == 0 {
 		http.Error(w, fmt.Sprintf("No document found with the name %s", name), http.StatusNotFound)
 		return nil
