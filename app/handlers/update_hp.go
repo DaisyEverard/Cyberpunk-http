@@ -47,9 +47,9 @@ func UpdateHP(w http.ResponseWriter, r *http.Request) {
 	// UpsertedID is nil: No ID was generated because no upsert occurred.
 
 	if id != "" {
-		result = updateHPByID(w, r, update, id)
+		result = UpdateHPByID(w, r, update, id)
 	} else if name != "" {
-		result = updateHPByName(w, r, update, name)
+		result = UpdateHPByName(w, r, update, name)
 	}
 
 	if result.ModifiedCount == 0 {
@@ -61,7 +61,7 @@ func UpdateHP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "HP of character with id %s updated successfully", id)
 }
 
-func updateHPByID(w http.ResponseWriter, r *http.Request, update bson.D, id string) *mongo.UpdateResult {
+func UpdateHPByID(w http.ResponseWriter, r *http.Request, update bson.D, id string) *mongo.UpdateResult {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		http.Error(w, "Invalid id format", http.StatusBadRequest)
@@ -80,7 +80,7 @@ func updateHPByID(w http.ResponseWriter, r *http.Request, update bson.D, id stri
 	return result
 }
 
-func updateHPByName(w http.ResponseWriter, r *http.Request, update bson.D, name string) *mongo.UpdateResult {
+func UpdateHPByName(w http.ResponseWriter, r *http.Request, update bson.D, name string) *mongo.UpdateResult {
 	result, err := config.Collection.UpdateOne(context.TODO(), bson.D{{"name", name}}, update)
 	if err == mongo.ErrNoDocuments || result.MatchedCount == 0 {
 		http.Error(w, fmt.Sprintf("No document found with the name %s", name), http.StatusNotFound)

@@ -24,17 +24,17 @@ func GetHPHandler(w http.ResponseWriter, r *http.Request) {
 	// logic for only one query field at a time
 	// implement multiple query fields at a time
 	if id != "" {
-		HP := getHPByID(w, id)
+		HP := GetHPByID(w, id)
 		HPasString := strconv.FormatFloat(HP, 'f', -1, 64)
 		db.SendOneField(w, HPasString, "HP")
 	} else if name != "" {
-		HP := getHPByName(w, name)
+		HP := GetHPByName(w, name)
 		HPasString := strconv.FormatFloat(HP, 'f', -1, 64)
 		db.SendOneField(w, HPasString, "HP")
 	}
 }
 
-func getHPByID(w http.ResponseWriter, id string) float64 {
+func GetHPByID(w http.ResponseWriter, id string) float64 {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		// This sends an HTTP response with the error message, no return value
@@ -63,7 +63,7 @@ func getHPByID(w http.ResponseWriter, id string) float64 {
 	return hp
 }
 
-func getHPByName(w http.ResponseWriter, name string) float64 {
+func GetHPByName(w http.ResponseWriter, name string) float64 {
 	projection := bson.D{
 		{"hp", 1},
 	}

@@ -23,15 +23,15 @@ func GetWholeDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	// 	result, err := getDocumentByIDandName(w, id)
 	// 	db.SendDocument(w, result, err, "id")
 	if id != "" {
-		result, err := getDocumentByID(w, id)
+		result, err := GetDocumentByID(w, id)
 		db.SendDocument(w, result, err, "id")
 	} else if name != "" {
-		result, err := getDocumentByName(w, name)
+		result, err := GetDocumentByName(w, name)
 		db.SendDocument(w, result, err, "name")
 	}
 }
 
-func getDocumentByID(w http.ResponseWriter, id string) (bson.M, error) {
+func GetDocumentByID(w http.ResponseWriter, id string) (bson.M, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		// This sends an HTTP response with the error message, no return value
@@ -42,6 +42,6 @@ func getDocumentByID(w http.ResponseWriter, id string) (bson.M, error) {
 	return db.CallFindOne(context.TODO(), bson.D{{"_id", objID}})
 }
 
-func getDocumentByName(w http.ResponseWriter, name string) (bson.M, error) {
+func GetDocumentByName(w http.ResponseWriter, name string) (bson.M, error) {
 	return db.CallFindOne(context.TODO(), bson.D{{"name", name}})
 }
