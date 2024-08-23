@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,27 +11,6 @@ import (
 	"main/app/config"
 	"main/app/db"
 )
-
-func GetHPHandler(w http.ResponseWriter, r *http.Request) {
-	name := r.URL.Query().Get("name")
-	id := r.URL.Query().Get("id")
-	if name == "" && id == "" {
-		http.Error(w, "name or id parameter is required", http.StatusBadRequest)
-		return
-	}
-
-	// logic for only one query field at a time
-	// implement multiple query fields at a time
-	if id != "" {
-		HP := GetHPByID(w, id)
-		HPasString := strconv.FormatFloat(HP, 'f', -1, 64)
-		db.SendOneField(w, HPasString, "HP")
-	} else if name != "" {
-		HP := GetHPByName(w, name)
-		HPasString := strconv.FormatFloat(HP, 'f', -1, 64)
-		db.SendOneField(w, HPasString, "HP")
-	}
-}
 
 func GetHPByID(w http.ResponseWriter, id string) float64 {
 	objID, err := primitive.ObjectIDFromHex(id)

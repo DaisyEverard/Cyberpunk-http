@@ -19,5 +19,5 @@ func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	mux.Handle("POST /hp/id/{id}", handlers.UpdateHPByID(usersCollection))
 	mux.Handler("POST /hp/name/{name}", handlers.UpdateHPByName(usersCollection))
 
-	mux.Handle("/", http.NotFoundHandler())
+	mux.Handle("/{$}", http.NotFoundHandler())
 }

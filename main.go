@@ -8,10 +8,12 @@ import (
 	"os"
 	"strings"
 
+	"main/app"
+	"main/app/config"
+
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"main/app"
 )
 
 func main() {
@@ -25,8 +27,8 @@ func main() {
 	MONGODB_PASSWORD := os.Getenv("MONGODB_PASSWORD")
 	PORT := os.Getenv("PORT")
 
-	connection_string := strings.Replace(MONGODB_URI,"<db_username>",MONGODB_USERNAME, 1)
-	connection_string = strings.Replace(connection_string,"<db_password>",MONGODB_PASSWORD, 1)
+	connection_string := strings.Replace(MONGODB_URI, "<db_username>", MONGODB_USERNAME, 1)
+	connection_string = strings.Replace(connection_string, "<db_password>", MONGODB_PASSWORD, 1)
 	mongoClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(connection_string))
 	if err != nil {
 		log.Fatal(err)
