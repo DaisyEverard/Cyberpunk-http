@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"main/services"
+	"main/app/services"
 )
 
 func HPHandler(w http.ResponseWriter, r *http.Request) {

@@ -9,8 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"main/config"
-	"main/db"
+	"main/app/config"
+	"main/app/db"
 )
 
 func GetHPHandler(w http.ResponseWriter, r *http.Request) {

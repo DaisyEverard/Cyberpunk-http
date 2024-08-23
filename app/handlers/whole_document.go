@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"main/services"
+	"main/app/services"
 	"net/http"
 )
 

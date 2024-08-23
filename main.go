@@ -6,13 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"main/config"
-	"main/handlers"
+	"main/app/config"
+	"main/app/handlers"
 )
 
 func main() {
@@ -22,8 +23,12 @@ func main() {
 	}
 
 	MONGODB_URI := os.Getenv("MONGODB_URI")
+	MONGODB_USERNAME := os.Getenv("MONGODB_USER")
+	MONGODB_PASSWORD := os.Getenv("MONGODB_PASSWORD")
+	connection_string := strings.Replace(MONGODB_URI,"<db_username>",MONGODB_USERNAME, 1)
+	connection_string = strings.Replace(connection_string,"<db_password>",MONGODB_PASSWORD, 1)
 
-	mongoClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(MONGODB_URI))
+	mongoClient, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(connection_string))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,7 +38,7 @@ func main() {
 	defer mongoClient.Disconnect(context.TODO())
 
 	http.HandleFunc("/document", handlers.WholeDocumentHandler)
-	http.HandleFunc("/hp", handlers.HPHandler)
+	http.HandleFunc("/hp", handlers.HPHandler,)
 
 	fmt.Printf("\nServer is listening on port %s...", config.PortNumber)
 	portAddress := ":" + config.PortNumber

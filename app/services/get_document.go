@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"main/db"
+	"main/app/db"
 )
 
 func GetWholeDocumentHandler(w http.ResponseWriter, r *http.Request) {

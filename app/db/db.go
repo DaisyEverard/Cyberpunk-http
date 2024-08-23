@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"main/config"
+	"main/app/config"
 )
 
 func CallFindOne(ctx context.Context, filter interface{}) (bson.M, error) {
