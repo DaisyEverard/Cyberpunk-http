@@ -14,10 +14,10 @@ func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	mux.Handle("GET /document/name/{name}", handlers.GetDocumentByName(usersCollection))
 
 	mux.Handle("GET /hp/id/{id}", handlers.GetHPByID(usersCollection))
-	mux.Handler("GET /hp/name/{name}", handlers.GetHPByName(usersCollection))
+	mux.Handle("GET /hp/name/{name}", handlers.GetHPByName(usersCollection))
 	// mux.Handler("GET /hp/id+name/{name, id}", handlers.GetUser(usersCollection))
 	mux.Handle("POST /hp/id/{id}", handlers.UpdateHPByID(usersCollection))
-	mux.Handler("POST /hp/name/{name}", handlers.UpdateHPByName(usersCollection))
+	mux.Handle("POST /hp/name/{name}", handlers.UpdateHPByName(usersCollection))
 
 	mux.Handle("/{$}", http.NotFoundHandler())
 }
