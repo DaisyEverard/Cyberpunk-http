@@ -44,6 +44,6 @@ func main() {
 		Handler: srv,
 	}
 
-	httpServer.ListenAndServe()
 	fmt.Printf("\nServer is listening on port %s...", PORT)
+	httpServer.ListenAndServe()
 }
