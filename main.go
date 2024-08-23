@@ -23,7 +23,7 @@ func main() {
 	}
 
 	MONGODB_URI := os.Getenv("MONGODB_URI")
-	MONGODB_USERNAME := os.Getenv("MONGODB_USER")
+	MONGODB_USERNAME := os.Getenv("MONGODB_USERNAME")
 	MONGODB_PASSWORD := os.Getenv("MONGODB_PASSWORD")
 	PORT := os.Getenv("PORT")
 
