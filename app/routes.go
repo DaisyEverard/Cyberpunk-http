@@ -55,7 +55,10 @@ func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	mux.Handle("POST /stats/by_id/{id}", handlers.UpdateFieldByID(usersCollection, "stats"))
 	mux.Handle("POST /stats/by_name/{name}", handlers.UpdateFieldByName(usersCollection, "stats"))
 
-	// userID: ObjectID
+	// OBJECTID
+	// ID
+	mux.Handle("GET /id/by_name/{name}", handlers.GetObjectIDByName(usersCollection))
+
 	// DEFAULT
 	mux.Handle("/{$}", http.NotFoundHandler())
 }
