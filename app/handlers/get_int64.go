@@ -13,7 +13,7 @@ import (
 	"main/app/db"
 )
 
-func GetNumberByID(usersCollection *mongo.Collection, fieldName string) http.HandlerFunc {
+func GetInt64ByID(usersCollection *mongo.Collection, fieldName string) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			id := r.PathValue("id")
@@ -35,20 +35,20 @@ func GetNumberByID(usersCollection *mongo.Collection, fieldName string) http.Han
 				http.Error(w, "ID not found", http.StatusNotFound)
 				return
 			}
-			fieldValue, ok := result[fieldName].(float64)
+			fieldValue, ok := result[fieldName].(int64)
 
 			if !ok {
 				http.Error(w, "Failed to convert "+fieldName+" to float64", http.StatusInternalServerError)
 				return
 			}
 
-			fieldValueAsString := strconv.FormatFloat(fieldValue, 'f', -1, 64)
+			fieldValueAsString := strconv.Itoa(int(fieldValue))
 			db.SendOneField(w, fieldValueAsString, fieldName)
 		},
 	)
 }
 
-func GetNumberByName(usersCollection *mongo.Collection, fieldName string) http.HandlerFunc {
+func GetInt64ByName(usersCollection *mongo.Collection, fieldName string) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			projection := bson.D{
@@ -63,13 +63,13 @@ func GetNumberByName(usersCollection *mongo.Collection, fieldName string) http.H
 				return
 			}
 
-			fieldValue, ok := result[fieldName].(float64)
+			fieldValue, ok := result[fieldName].(int64)
 			if !ok {
 				http.Error(w, "Failed to convert "+fieldName+" to float64", http.StatusInternalServerError)
 				return
 			}
 
-			fieldValueAsString := strconv.FormatFloat(fieldValue, 'f', -1, 64)
+			fieldValueAsString := strconv.Itoa(int(fieldValue))
 			db.SendOneField(w, fieldValueAsString, fieldName)
 		},
 	)
