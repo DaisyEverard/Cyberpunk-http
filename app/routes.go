@@ -12,24 +12,33 @@ func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	// handle multiple docs with same name
 
 	// DOCUMENT
-	mux.Handle("GET /document/id/{id}", handlers.GetDocumentByID(usersCollection))
-	mux.Handle("GET /document/name/{name}", handlers.GetDocumentByName(usersCollection))
+	mux.Handle("GET /document/by_id/{id}", handlers.GetDocumentByID(usersCollection))
+	mux.Handle("GET /document/by_name/{name}", handlers.GetDocumentByName(usersCollection))
 
-	// NUMBERS
+	// INT64
 	// HP
-	mux.Handle("GET /hp/id/{id}", handlers.GetInt64ByID(usersCollection, "hp"))
-	mux.Handle("GET /hp/name/{name}", handlers.GetInt64ByName(usersCollection, "hp"))
-	mux.Handle("POST /hp/id/{id}", handlers.UpdateFieldByID(usersCollection, "hp"))
-	mux.Handle("POST /hp/name/{name}", handlers.UpdateFieldByName(usersCollection, "hp"))
+	mux.Handle("GET /hp/by_id/{id}", handlers.GetInt64ByID(usersCollection, "hp"))
+	mux.Handle("GET /hp/by_name/{name}", handlers.GetInt64ByName(usersCollection, "hp"))
+	mux.Handle("POST /hp/by_id/{id}", handlers.UpdateFieldByID(usersCollection, "hp"))
+	mux.Handle("POST /hp/by_name/{name}", handlers.UpdateFieldByName(usersCollection, "hp"))
 	// HUMANITY
-	mux.Handle("GET /humanity/id/{id}", handlers.GetInt64ByID(usersCollection, "humanity"))
-	mux.Handle("GET /humanity/name/{name}", handlers.GetInt64ByName(usersCollection, "humanity"))
-	mux.Handle("POST /humanity/id/{id}", handlers.UpdateFieldByID(usersCollection, "humanity"))
-	mux.Handle("POST /humanity/name/{name}", handlers.UpdateFieldByName(usersCollection, "humanity"))
+	mux.Handle("GET /humanity/by_id/{id}", handlers.GetInt64ByID(usersCollection, "humanity"))
+	mux.Handle("GET /humanity/by_name/{name}", handlers.GetInt64ByName(usersCollection, "humanity"))
+	mux.Handle("POST /humanity/by_id/{id}", handlers.UpdateFieldByID(usersCollection, "humanity"))
+	mux.Handle("POST /humanity/by_name/{name}", handlers.UpdateFieldByName(usersCollection, "humanity"))
+
+	// STRING
+	// NAME
+	mux.Handle("GET /name/by_id/{id}", handlers.GetStringByID(usersCollection, "name"))
+	mux.Handle("POST /name/by_id/{id}", handlers.UpdateFieldByID(usersCollection, "name"))
+	mux.Handle("POST /name/by_name/{name}", handlers.UpdateFieldByName(usersCollection, "name"))
+	// ROLE
+	mux.Handle("GET /role/by_id/{id}", handlers.GetStringByID(usersCollection, "role"))
+	mux.Handle("GET /role/by_name/{name}", handlers.GetStringByName(usersCollection, "role"))
+	mux.Handle("POST /role/by_id/{id}", handlers.UpdateFieldByID(usersCollection, "role"))
+	mux.Handle("POST /role/by_name/{name}", handlers.UpdateFieldByName(usersCollection, "role"))
 
 	// effects: json objects
-	// name: string
-	// role: string
 	// skills: json object
 	// stats: object
 	// userID: ObjectID
