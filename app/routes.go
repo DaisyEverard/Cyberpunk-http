@@ -38,9 +38,23 @@ func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	mux.Handle("POST /role/by_id/{id}", handlers.UpdateFieldByID(usersCollection, "role"))
 	mux.Handle("POST /role/by_name/{name}", handlers.UpdateFieldByName(usersCollection, "role"))
 
-	// effects: json objects
-	// skills: json object
-	// stats: object
+	// OBJECTS
+	// EFFECTS
+	mux.Handle("GET /effects/by_id/{id}", handlers.GetJSONObjectByID(usersCollection, "effects"))
+	mux.Handle("GET /effects/by_name/{name}", handlers.GetJSONObjectByName(usersCollection, "effects"))
+	mux.Handle("POST /effects/by_id/{id}", handlers.UpdateFieldByID(usersCollection, "effects"))
+	mux.Handle("POST /effects/by_name/{name}", handlers.UpdateFieldByName(usersCollection, "effects"))
+	// SKILLS
+	mux.Handle("GET /skills/by_id/{id}", handlers.GetJSONObjectByID(usersCollection, "skills"))
+	mux.Handle("GET /skills/by_name/{name}", handlers.GetJSONObjectByName(usersCollection, "skills"))
+	mux.Handle("POST /skills/by_id/{id}", handlers.UpdateFieldByID(usersCollection, "skills"))
+	mux.Handle("POST /skills/by_name/{name}", handlers.UpdateFieldByName(usersCollection, "skills"))
+	// STATS
+	mux.Handle("GET /stats/by_id/{id}", handlers.GetJSONObjectByID(usersCollection, "stats"))
+	mux.Handle("GET /stats/by_name/{name}", handlers.GetJSONObjectByName(usersCollection, "stats"))
+	mux.Handle("POST /stats/by_id/{id}", handlers.UpdateFieldByID(usersCollection, "stats"))
+	mux.Handle("POST /stats/by_name/{name}", handlers.UpdateFieldByName(usersCollection, "stats"))
+
 	// userID: ObjectID
 	// DEFAULT
 	mux.Handle("/{$}", http.NotFoundHandler())
