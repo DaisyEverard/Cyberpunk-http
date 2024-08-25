@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func getUpdateData(w http.ResponseWriter, r *http.Request) (update bson.D) {
+func getUpdateData(w http.ResponseWriter, r *http.Request, fieldName string) (update bson.D) {
 	var updateData bson.M
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
 		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
@@ -20,16 +20,16 @@ func getUpdateData(w http.ResponseWriter, r *http.Request) (update bson.D) {
 	}
 	fmt.Printf("Received updateData: %+v\n", updateData)
 
-	newHP, ok := updateData["hp"] // int32 in Mongo
+	newValue, ok := updateData[fieldName] // int32 in Mongo
 	if !ok {
-		http.Error(w, "hp field is required and must be a number", http.StatusBadRequest)
+		http.Error(w, fieldName+" field is required and must be a number", http.StatusBadRequest)
 		return
 	}
-	update = bson.D{{"$set", bson.M{"hp": newHP}}}
+	update = bson.D{{"$set", bson.M{fieldName: newValue}}}
 	return update
 }
 
-func UpdateHPByID(usersCollection *mongo.Collection) http.HandlerFunc {
+func UpdateFieldByID(usersCollection *mongo.Collection, fieldName string) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			id := r.PathValue("id")
@@ -39,7 +39,7 @@ func UpdateHPByID(usersCollection *mongo.Collection) http.HandlerFunc {
 				return
 			}
 
-			update := getUpdateData(w, r)
+			update := getUpdateData(w, r, fieldName)
 
 			result, err := config.Collection.UpdateOne(context.TODO(), bson.D{{"_id", objID}}, update)
 
@@ -57,15 +57,15 @@ func UpdateHPByID(usersCollection *mongo.Collection) http.HandlerFunc {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "HP of character with id %s updated successfully", id)
+			fmt.Fprintf(w, fieldName+" of character with id %s updated successfully", id)
 		},
 	)
 }
 
-func UpdateHPByName(usersCollection *mongo.Collection) http.HandlerFunc {
+func UpdateFieldByName(usersCollection *mongo.Collection, fieldName string) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			update := getUpdateData(w, r)
+			update := getUpdateData(w, r, fieldName)
 			name := r.PathValue("name")
 			result, err := config.Collection.UpdateOne(context.TODO(), bson.D{{"name", name}}, update)
 			if err == mongo.ErrNoDocuments || result.MatchedCount == 0 {
