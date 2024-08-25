@@ -13,7 +13,7 @@ import (
 	"main/app/db"
 )
 
-func GetHPByID(usersCollection *mongo.Collection) http.HandlerFunc {
+func GetNumberByID(usersCollection *mongo.Collection, fieldName string) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			id := r.PathValue("id")
@@ -26,51 +26,51 @@ func GetHPByID(usersCollection *mongo.Collection) http.HandlerFunc {
 			}
 
 			projection := bson.D{
-				{"hp", 1},
+				{fieldName, 1},
 			}
 			findOptions := options.FindOne().SetProjection(projection)
 
 			result, err := db.CallFindOneWithOptions(context.TODO(), bson.D{{"_id", objID}}, findOptions)
 			if err != nil {
-				http.Error(w, "HP not found", http.StatusNotFound)
+				http.Error(w, "ID not found", http.StatusNotFound)
 				return
 			}
-			hp, ok := result["hp"].(float64)
+			fieldValue, ok := result[fieldName].(float64)
 
 			if !ok {
-				http.Error(w, "Failed to convert HP to float64", http.StatusInternalServerError)
+				http.Error(w, "Failed to convert "+fieldName+" to float64", http.StatusInternalServerError)
 				return
 			}
 
-			HPasString := strconv.FormatFloat(hp, 'f', -1, 64)
-			db.SendOneField(w, HPasString, "HP")
+			fieldValueAsString := strconv.FormatFloat(fieldValue, 'f', -1, 64)
+			db.SendOneField(w, fieldValueAsString, fieldName)
 		},
 	)
 }
 
-func GetHPByName(usersCollection *mongo.Collection) http.HandlerFunc {
+func GetNumberByName(usersCollection *mongo.Collection, fieldName string) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			projection := bson.D{
-				{"hp", 1},
+				{fieldName, 1},
 			}
 			findOptions := options.FindOne().SetProjection(projection)
 
 			name := r.PathValue("name")
 			result, err := db.CallFindOneWithOptions(context.TODO(), bson.D{{"name", name}}, findOptions)
 			if err != nil {
-				http.Error(w, "HP not found", http.StatusNotFound)
+				http.Error(w, fieldName+" not found", http.StatusNotFound)
 				return
 			}
 
-			hp, ok := result["hp"].(float64)
+			fieldValue, ok := result[fieldName].(float64)
 			if !ok {
-				http.Error(w, "Failed to convert HP to float64", http.StatusInternalServerError)
+				http.Error(w, "Failed to convert "+fieldName+" to float64", http.StatusInternalServerError)
 				return
 			}
 
-			HPasString := strconv.FormatFloat(hp, 'f', -1, 64)
-			db.SendOneField(w, HPasString, "HP")
+			fieldValueAsString := strconv.FormatFloat(fieldValue, 'f', -1, 64)
+			db.SendOneField(w, fieldValueAsString, fieldName)
 		},
 	)
 }
