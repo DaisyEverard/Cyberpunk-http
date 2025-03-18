@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -35,8 +36,8 @@ func GetInt64ByID(usersCollection *mongo.Collection, fieldName string) http.Hand
 				http.Error(w, "ID not found", http.StatusNotFound)
 				return
 			}
-			fieldValue, ok := result[fieldName].(int64)
-
+			
+			fieldValue, ok := result[fieldName].(float64)
 			if !ok {
 				http.Error(w, "Failed to convert "+fieldName+" to float64", http.StatusInternalServerError)
 				return
@@ -62,8 +63,9 @@ func GetInt64ByName(usersCollection *mongo.Collection, fieldName string) http.Ha
 				http.Error(w, fieldName+" not found", http.StatusNotFound)
 				return
 			}
-
-			fieldValue, ok := result[fieldName].(int64)
+			fmt.Println("result before conversion:", result[fieldName])
+		//	_ := result[fieldName]
+			fieldValue, ok := result[fieldName].(float64)
 			if !ok {
 				http.Error(w, "Failed to convert "+fieldName+" to float64", http.StatusInternalServerError)
 				return

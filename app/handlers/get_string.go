@@ -37,7 +37,7 @@ func GetStringByID(usersCollection *mongo.Collection, fieldName string) http.Han
 			fieldValue, ok := result[fieldName].(string)
 
 			if !ok {
-				http.Error(w, "Failed to convert "+fieldName+" to float64", http.StatusInternalServerError)
+				http.Error(w, "Failed to convert "+fieldName+" to string", http.StatusInternalServerError)
 				return
 			}
 
@@ -63,7 +63,7 @@ func GetStringByName(usersCollection *mongo.Collection, fieldName string) http.H
 
 			fieldValue, ok := result[fieldName].(string)
 			if !ok {
-				http.Error(w, "Failed to convert "+fieldName+" to float64", http.StatusInternalServerError)
+				http.Error(w, "Failed to convert "+fieldName+" to string", http.StatusInternalServerError)
 				return
 			}
 

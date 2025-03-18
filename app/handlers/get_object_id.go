@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,10 +13,8 @@ import (
 )
 
 func GetObjectIDByName(usersCollection *mongo.Collection) http.HandlerFunc {
-	fmt.Println("get object id outside");
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("get object id inside");
 			projection := bson.D{
 				{"_id", 1},
 			}

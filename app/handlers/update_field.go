@@ -18,9 +18,9 @@ func getUpdateData(w http.ResponseWriter, r *http.Request, fieldName string) (up
 		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("Received updateData: %+v\n", updateData)
+	fmt.Printf("Received updateData: %+v", updateData)
 
-	newValue, ok := updateData[fieldName] // int32 in Mongo
+	newValue, ok := updateData[fieldName]
 	if !ok {
 		http.Error(w, fieldName+" field is required and must be a number", http.StatusBadRequest)
 		return

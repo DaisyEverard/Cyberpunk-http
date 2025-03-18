@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,7 +12,6 @@ import (
 )
 
 func GetDocumentByID(usersCollection *mongo.Collection) http.HandlerFunc {
-	fmt.Println("Cyka");
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			id := r.PathValue("id")
