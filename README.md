@@ -19,4 +19,6 @@ go run .
 
 ## Testing
 
-How??
+Got to localhost8080
+
+add extension for handler you want to test

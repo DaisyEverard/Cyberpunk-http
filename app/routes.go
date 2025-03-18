@@ -60,5 +60,5 @@ func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	mux.Handle("GET /id/by_name/{name}", handlers.GetObjectIDByName(usersCollection))
 
 	// DEFAULT
-	mux.Handle("/{$}", http.NotFoundHandler())
+	mux.Handle("/{$}", handlers.NotFound())
 }

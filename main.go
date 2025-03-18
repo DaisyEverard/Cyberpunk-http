@@ -12,6 +12,7 @@ import (
 	"main/app/config"
 
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -39,9 +40,18 @@ func main() {
 	defer mongoClient.Disconnect(context.TODO())
 
 	srv := app.NewServer(config.Collection)
+
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders: []string{"*"},
+		AllowCredentials: true,
+	})
+
 	httpServer := &http.Server{
 		Addr:    `:` + PORT,
-		Handler: srv,
+		Handler: c.Handler(srv),
 	}
 
 	fmt.Printf("\nServer is listening on port %s...", PORT)
