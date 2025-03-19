@@ -55,3 +55,10 @@ func SendOneField(w http.ResponseWriter, value string, queryType string) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+
+func SendNames(w http.ResponseWriter, names []bson.M) {
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(names); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
