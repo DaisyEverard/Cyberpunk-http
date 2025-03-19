@@ -12,6 +12,7 @@ import (
 )
 
 func GetCharacterNames(usersCollection *mongo.Collection) http.HandlerFunc {
+	// returns data in format [{"name": "name1"},{"name": "name2"},...]
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			projection := bson.M{"name": 1, "_id": 0}
