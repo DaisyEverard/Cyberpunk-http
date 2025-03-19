@@ -13,6 +13,12 @@ import (
 	"main/app/config"
 )
 
+// CALL
+func CallFindWithOptions(ctx context.Context, filter interface{}, options *options.FindOptions) (*mongo.Cursor, error) {
+	cursor, err := config.Collection.Find(context.TODO(), filter, options)
+	return cursor, err
+}
+
 func CallFindOne(ctx context.Context, filter interface{}) (bson.M, error) {
 	var result bson.M
 	err := config.Collection.FindOne(context.TODO(), filter).Decode(&result)
@@ -25,6 +31,7 @@ func CallFindOneWithOptions(ctx context.Context, filter interface{}, options *op
 	return result, err
 }
 
+// SEND
 func SendDocument(w http.ResponseWriter, result bson.M, err error, queryType string) {
 	if err == mongo.ErrNoDocuments {
 		http.Error(w, fmt.Sprintf("No document found with that %s", queryType), http.StatusNotFound)

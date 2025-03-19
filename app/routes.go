@@ -11,6 +11,10 @@ import (
 func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	// handle multiple docs with same name
 
+	mux.Handle("GET /characters/names", handlers.GetCharacterNames(usersCollection))
+// have optional query param e.g. format
+// formats: simple, full
+
 	// DOCUMENT
 	mux.Handle("GET /document/by_id/{id}", handlers.GetDocumentByID(usersCollection))
 	mux.Handle("GET /document/by_name/{name}", handlers.GetDocumentByName(usersCollection))
