@@ -8,8 +8,8 @@ import (
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
@@ -31,20 +31,33 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 					return
 				}
 
+				message := fmt.Sprintf("Character with id %s created successfully", result.InsertedID)
+
 				w.WriteHeader(http.StatusCreated)
-			    fmt.Fprintf(w, "Character with id %s created successfully", result.InsertedID)
+				idObject := struct{Message string; Id interface{}}{message, result.InsertedID}
+				json.NewEncoder(w).Encode(idObject)
 				return
 			}
+			
 
-			fmt.Printf("%v", updateData.Id) 
+			id, err := primitive.ObjectIDFromHex(*updateData.Id)
+			fmt.Printf("id is: %v", id) 
 
-			id := updateData.Id
+			if (err != nil) {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 
 			filter := bson.M{"_id": id}
-			upsert := true
-			options := options.UpdateOptions{Upsert: &upsert}
+			update := bson.M{"$set": bson.M{
+				"name": updateData.Name, 
+				"role": updateData.Role,
+				"stats": updateData.Stats,
+				"hp": updateData.HP,
+				"humanity": updateData.Humanity,
+				"currentSkills": updateData.CurrentSkills,
+				"currentEffects": updateData.CurrentEffects}}
 
-			result, err := config.Collection.UpdateOne(context.TODO(), filter, updateData, &options)
+			result, err := config.Collection.UpdateOne(context.TODO(), filter, update)
 
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
