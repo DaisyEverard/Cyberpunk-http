@@ -11,11 +11,11 @@ import (
 	"main/app/db"
 )
 
-func GetCharacterNames(usersCollection *mongo.Collection) http.HandlerFunc {
+func GetCharacterNamesAndIDs(usersCollection *mongo.Collection) http.HandlerFunc {
 	// returns data in format [{"name": "name1"},{"name": "name2"},...]
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			projection := bson.M{"name": 1, "_id": 0}
+			projection := bson.M{ "_id": 1, "name": 1}
 			findOptions := options.Find().SetProjection(projection)
 
 			cursor, err := db.CallFindWithOptions(context.TODO(), bson.M{}, findOptions)

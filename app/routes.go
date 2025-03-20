@@ -11,7 +11,7 @@ import (
 func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	// handle multiple docs with same name
 
-	mux.Handle("GET /characters/names", handlers.GetCharacterNames(usersCollection))
+	mux.Handle("GET /characters/names_and_ids", handlers.GetCharacterNamesAndIDs(usersCollection))
 	// THE WISDOM OF STEVEN PEARS
 	// have optional query param e.g. format
 	// formats: simple, full
@@ -20,8 +20,6 @@ func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	mux.Handle("GET /document/by_id/{id}", handlers.GetDocumentByID(usersCollection))
 	mux.Handle("GET /document/by_name/{name}", handlers.GetDocumentByName(usersCollection))
 	mux.Handle("POST /document", handlers.UpdateDocumentHandler(usersCollection))
-	// needs logic for overwriting existing records, will use ID as primary key
-	// also need logic for new character. Same route but for an ID that doesn't exist yet
 
 	// INT64
 	// HP
