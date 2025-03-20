@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func getUpdateData(w http.ResponseWriter, r *http.Request, fieldName string) (update bson.D) {
+func getUpdateDataForField(w http.ResponseWriter, r *http.Request, fieldName string) (update bson.D) {
 	var updateData bson.M
 	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
 		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
@@ -22,7 +22,7 @@ func getUpdateData(w http.ResponseWriter, r *http.Request, fieldName string) (up
 
 	newValue, ok := updateData[fieldName]
 	if !ok {
-		http.Error(w, fieldName+" field is required and must be a number", http.StatusBadRequest)
+		http.Error(w, fieldName+" field is required and must be a string", http.StatusBadRequest)
 		return
 	}
 	update = bson.D{{"$set", bson.M{fieldName: newValue}}}
@@ -39,7 +39,7 @@ func UpdateFieldByID(usersCollection *mongo.Collection, fieldName string) http.H
 				return
 			}
 
-			update := getUpdateData(w, r, fieldName)
+			update := getUpdateDataForField(w, r, fieldName)
 
 			result, err := config.Collection.UpdateOne(context.TODO(), bson.D{{"_id", objID}}, update)
 
@@ -65,7 +65,7 @@ func UpdateFieldByID(usersCollection *mongo.Collection, fieldName string) http.H
 func UpdateFieldByName(usersCollection *mongo.Collection, fieldName string) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			update := getUpdateData(w, r, fieldName)
+			update := getUpdateDataForField(w, r, fieldName)
 			name := r.PathValue("name")
 			result, err := config.Collection.UpdateOne(context.TODO(), bson.D{{"name", name}}, update)
 			if err == mongo.ErrNoDocuments || result.MatchedCount == 0 {

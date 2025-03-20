@@ -19,6 +19,9 @@ func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	// DOCUMENT
 	mux.Handle("GET /document/by_id/{id}", handlers.GetDocumentByID(usersCollection))
 	mux.Handle("GET /document/by_name/{name}", handlers.GetDocumentByName(usersCollection))
+	mux.Handle("POST /document", handlers.UpdateDocumentHandler(usersCollection))
+	// needs logic for overwriting existing records, will use ID as primary key
+	// also need logic for new character. Same route but for an ID that doesn't exist yet
 
 	// INT64
 	// HP
