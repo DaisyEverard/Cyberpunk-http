@@ -15,7 +15,7 @@ import (
 func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("updateDocumentHandler\n")
+			fmt.Println("updateDocumentHandler")
 			var updateData CharacterWithID
 			err := json.NewDecoder(r.Body).Decode(&updateData);
 
@@ -25,7 +25,7 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 			}
 
 			if(updateData.Id == primitive.ObjectID{000000000000000000000000}) {
-				fmt.Println("Character ID was nil\n")
+				fmt.Println("Character ID was nil")
 
 				dataWihoutID := CharacterWithoutID{
 					updateData.Name,
