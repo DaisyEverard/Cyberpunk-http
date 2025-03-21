@@ -14,10 +14,7 @@ type Skill struct {
 }
 
 type Effect struct {
-	Name string `bson:"name"`;
-	Description string `bson:"description"`;
-	Category string `bson:"category"`;
-	Alt string `bson:"alt"`;
+	Active bool `bson:"active"`;
 }
 
 type CharacterWithID struct {
