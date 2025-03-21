@@ -52,7 +52,6 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 			}
 
 			fmt.Printf("Character ID: %v", updateData.Id)
-			id, _ := primitive.ObjectIDFromHex(updateData.Id.Hex())
 
 			filter := bson.M{"_id": updateData.Id}
 			update := bson.M{"$set": bson.M{
