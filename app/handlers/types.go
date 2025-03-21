@@ -1,30 +1,42 @@
 package handlers
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type SkillOption struct {
-	Name string `string:"name"`;
-	Level int32 `int32:"level"`;
+	Name string `bson:"name"`;
+	Level int32 `bson:"level"`;
 }
 type Skill struct {
-	Level int32 `int32:"level"`;
+	Level int32 `bson:"level"`;
 	Has_options bool `bool:"has_options"`;
-	Stat_type string `string:"stat_type"`;
-	Options map[string]SkillOption `map[string]SkillOption:"options"`;
+	Stat_type string `bson:"stat_type"`;
+	Options map[string]SkillOption `bson:"options"`;
 }
 
 type Effect struct {
-	Name string `string:"name"`;
-	Description string `string:"description"`;
-	Category string `string:"category"`;
-	Alt string `string:"alt"`;
+	Name string `bson:"name"`;
+	Description string `bson:"description"`;
+	Category string `bson:"category"`;
+	Alt string `bson:"alt"`;
 }
 
-type Character struct {
-	Id *string `string:"id"`;
-	Name string `string:"name"`;
-	Role string `string:"role"`;
-	Stats map[string]int32 `map[string]int32:"stats"`;
-	HP int32 `int32:"HP"`;
-	Humanity int32 `int32:"humanity"`;
-	CurrentSkills map[string]Skill `map[string]Skill:"currentSkills"`;
-	CurrentEffects map[string]Effect `map[string]Effect:"currentEffects"`;
+type CharacterWithID struct {
+	Id primitive.ObjectID `bson:"id"`;
+	Name string `bson:"name"`;
+	Role string `bson:"role"`;
+	Stats map[string]int32 `bson:"stats"`;
+	HP int32 `bson:"hp"`;
+	Humanity int32 `bson:"humanity"`;
+	CurrentSkills map[string]Skill `bson:"currentSkills"`;
+	CurrentEffects map[string]Effect `bson:"currentEffects"`;
+}
+
+type CharacterWithoutID struct {
+	Name string `bson:"name"`;
+	Role string `bson:"role"`;
+	Stats map[string]int32 `bson:"stats"`;
+	HP int32 `bson:"hp"`;
+	Humanity int32 `bson:"humanity"`;
+	CurrentSkills map[string]Skill `bson:"currentSkills"`;
+	CurrentEffects map[string]Effect `bson:"currentEffects"`;
 }

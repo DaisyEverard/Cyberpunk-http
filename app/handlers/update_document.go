@@ -15,7 +15,7 @@ import (
 func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			var updateData Character
+			var updateData CharacterWithID
 			err := json.NewDecoder(r.Body).Decode(&updateData);
 
 			if(err != nil) {
@@ -23,8 +23,22 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 				return
 			}
 
-			if(updateData.Id == nil) {
-				result, err := config.Collection.InsertOne(context.TODO(), updateData)
+			fmt.Printf("\nid at start is: %v", updateData.Id) 
+
+			if(updateData.Id == primitive.ObjectID{000000000000000000000000}) {
+				fmt.Println("Character ID was nil")
+
+				dataWihoutID := CharacterWithoutID{
+					updateData.Name,
+					updateData.Role,
+					updateData.Stats,
+					updateData.HP,
+					updateData.Humanity,
+					updateData.CurrentSkills,
+					updateData.CurrentEffects,
+				}
+
+				result, err := config.Collection.InsertOne(context.TODO(), dataWihoutID)
 
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -38,16 +52,12 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 				json.NewEncoder(w).Encode(idObject)
 				return
 			}
-			
 
-			id, err := primitive.ObjectIDFromHex(*updateData.Id)
-			fmt.Printf("id is: %v", id) 
+			fmt.Printf("Character ID: %v", updateData.Id)
+			id, _ := primitive.ObjectIDFromHex(updateData.Id.Hex())
+			fmt.Printf("\nid after is: %v", id) 
 
-			if (err != nil) {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-
-			filter := bson.M{"_id": id}
+			filter := bson.M{"_id": updateData.Id}
 			update := bson.M{"$set": bson.M{
 				"name": updateData.Name, 
 				"role": updateData.Role,
@@ -70,7 +80,7 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "Character with id %v updated successfully", id)
+			fmt.Fprintf(w, "Character with id %v updated successfully", updateData.Id)
 		},
 	)
 }
