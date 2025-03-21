@@ -23,8 +23,6 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 				return
 			}
 
-			fmt.Printf("\nid at start is: %v", updateData.Id) 
-
 			if(updateData.Id == primitive.ObjectID{000000000000000000000000}) {
 				fmt.Println("Character ID was nil")
 
@@ -55,7 +53,6 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 
 			fmt.Printf("Character ID: %v", updateData.Id)
 			id, _ := primitive.ObjectIDFromHex(updateData.Id.Hex())
-			fmt.Printf("\nid after is: %v", id) 
 
 			filter := bson.M{"_id": updateData.Id}
 			update := bson.M{"$set": bson.M{

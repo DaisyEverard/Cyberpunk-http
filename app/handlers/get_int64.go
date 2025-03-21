@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -63,7 +62,6 @@ func GetInt64ByName(usersCollection *mongo.Collection, fieldName string) http.Ha
 				http.Error(w, fieldName+" not found", http.StatusNotFound)
 				return
 			}
-			fmt.Println("result before conversion:", result[fieldName])
 		//	_ := result[fieldName]
 			fieldValue, ok := result[fieldName].(float64)
 			if !ok {
