@@ -20,6 +20,7 @@ func addRoutes(mux *http.ServeMux, usersCollection *mongo.Collection) {
 	mux.Handle("GET /document/by_id/{id}", handlers.GetDocumentByID(usersCollection))
 	mux.Handle("GET /document/by_name/{name}", handlers.GetDocumentByName(usersCollection))
 	mux.Handle("POST /document/existing", handlers.UpdateDocumentHandler(usersCollection))
+	mux.Handle("POST /document/new", handlers.NewDocumentHandler(usersCollection))
 
 	// INT64
 	// HP

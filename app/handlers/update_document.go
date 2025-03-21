@@ -12,9 +12,47 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+func NewDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println("newDocumentHandler")
+			var updateData CharacterWithID
+			err := json.NewDecoder(r.Body).Decode(&updateData);
+
+			if(err != nil) {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			dataWihoutID := CharacterWithoutID{
+				updateData.Name,
+				updateData.Role,
+				updateData.Stats,
+				updateData.HP,
+				updateData.Humanity,
+				updateData.CurrentSkills,
+				updateData.CurrentEffects,
+			}
+
+				result, err := config.Collection.InsertOne(context.TODO(), dataWihoutID)
+
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				message := fmt.Sprintf("Character with id %s created successfully\n", result.InsertedID)
+
+				w.WriteHeader(http.StatusCreated)
+				idObject := struct{Message string; Id interface{}}{message, result.InsertedID}
+				json.NewEncoder(w).Encode(idObject)
+		},
+	)
+}
+
 func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			fmt.Println("updateDocumentHandler")
 			var updateData CharacterWithID
 			err := json.NewDecoder(r.Body).Decode(&updateData);
 
@@ -24,7 +62,7 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 			}
 
 			if(updateData.Id == primitive.ObjectID{000000000000000000000000}) {
-				fmt.Println("Character ID was nil")
+				fmt.Println("Character ID was nil\n")
 
 				dataWihoutID := CharacterWithoutID{
 					updateData.Name,
@@ -43,7 +81,7 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 					return
 				}
 
-				message := fmt.Sprintf("Character with id %s created successfully", result.InsertedID)
+				message := fmt.Sprintf("Character with id %s created successfully\n", result.InsertedID)
 
 				w.WriteHeader(http.StatusCreated)
 				idObject := struct{Message string; Id interface{}}{message, result.InsertedID}
@@ -51,7 +89,7 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 				return
 			}
 
-			fmt.Printf("Character ID: %v", updateData.Id)
+			fmt.Printf("Character ID: %v\n", updateData.Id)
 
 			filter := bson.M{"_id": updateData.Id}
 			update := bson.M{"$set": bson.M{
@@ -76,7 +114,7 @@ func UpdateDocumentHandler(usersCollection *mongo.Collection) http.HandlerFunc {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "Character with id %v updated successfully", updateData.Id)
+			fmt.Fprintf(w, "Character with id %v updated successfully\n", updateData.Id)
 		},
 	)
 }
